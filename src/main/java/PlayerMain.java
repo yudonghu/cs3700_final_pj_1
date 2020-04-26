@@ -4,6 +4,16 @@ import akka.actor.*;
 
 public class PlayerMain  {
 
+    public static void main(String[] args) {
+//
+//        akka.actor.ActorSystem rootSystem = akka.actor.ActorSystem.create("root-system");
+//        ActorRef playerThree = rootSystem.actorOf(Player.props("playerThree"));
+        //ActorRef playerOne = rootSystem.actorOf(Player.props(), "playerOne");
+        //ActorRef playerTwo = rootSystem.actorOf(Player.props(), "playerTwo");
+        ActorSystem system = ActorSystem.create("myActorSystem");
+        system.actorOf(Props.create(StartActor.class,2,10), "helloWorld");
+    }
+
     public static class StartActor extends UntypedAbstractActor {
         int playerAmount;
         int numGames;
@@ -12,11 +22,9 @@ public class PlayerMain  {
             this.playerAmount = playerAmount;
             this.numGames = numGames;
         }
-
         @Override
         public void preStart() throws Exception {
             allPlayersRef = new ActorRef[playerAmount];
-
             //create players
             for(int i = 0; i < playerAmount ;i++){
                 String playerName = String.valueOf(i);
@@ -24,39 +32,15 @@ public class PlayerMain  {
             }
             //send players starting message
             for(int i = 0; i < playerAmount ;i++){
-                allPlayersRef[i].tell(new Player.startMsg(allPlayersRef,playerAmount,numGames), this.getSelf());
+                allPlayersRef[i].tell(new Player.systemStartMsg(allPlayersRef,playerAmount,numGames), this.getSelf());
+
             }
-
-
         }
-
         @Override
         public void onReceive(Object message) throws Throwable {
 
         }
     }
-
-
-
-
-
-
-
-    public static void main(String[] args) {
-
-//
-//        akka.actor.ActorSystem rootSystem = akka.actor.ActorSystem.create("root-system");
-//        ActorRef playerThree = rootSystem.actorOf(Player.props("playerThree"));
-
-        //ActorRef playerOne = rootSystem.actorOf(Player.props(), "playerOne");
-        //ActorRef playerTwo = rootSystem.actorOf(Player.props(), "playerTwo");
-
-
-        ActorSystem system = ActorSystem.create("myActorSystem");
-        system.actorOf(Props.create(StartActor.class,2,5), "helloWorld");
-
-    }
-
 
 }
 
