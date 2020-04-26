@@ -146,9 +146,8 @@ public class Player extends UntypedAbstractActor {
 
 
         // I am in ready state, check if is everyone else ready.
+   //     log.info("message from "+msg.name+" gotten : player "+this.myName+" my state: " + this.myState);
 
-
-        log.info("message from "+msg.name+" gotten : player "+this.myName+" my state: " + this.myState);
 
         if(myState.equals("ready")){
 
@@ -163,9 +162,9 @@ public class Player extends UntypedAbstractActor {
 
             if(!(msg.state.equals("ready"))){//check is this sender opponent ready
                 //send a message to opponent to tell "I am ready"
-                msg.replyTo.tell(new playerMsg(this.myState,this.myName,this.currentRound,null,this.getSelf()),this.getSelf());
+                //msg.replyTo.tell(new playerMsg(this.myState,this.myName,this.currentRound,null,this.getSelf()),this.getSelf());
                 //print who's not ready
-                log.info("Player "+this.myName+": Player "+msg.name+" one is not in ready state");
+      //          log.info("Player "+this.myName+": Player "+msg.name+" one is not in ready state");
             }else{
                 //go through all player's in map
                 for(int i = 0; i < allPlayersRefList.length;i++){
@@ -173,9 +172,9 @@ public class Player extends UntypedAbstractActor {
                     //check 2: if this one has the different round number with me
                     if(roundMap.containsKey(allPlayersRefList[i])&&roundMap.get(allPlayersRefList[i]) != currentRound){
                         //send a message to this person to tell "I am ready"
-                        msg.replyTo.tell(new playerMsg(this.myState,this.myName,this.currentRound,null,this.getSelf()),this.getSelf());
+                        //msg.replyTo.tell(new playerMsg(this.myState,this.myName,this.currentRound,null,this.getSelf()),this.getSelf());
                         //print who's not ready
-                        log.info("Player "+this.myName+": Player "+this.myName+" is not ready, his round number:"+msg.currentRound);
+                        //log.info("Player "+this.myName+": Player "+this.myName+" is not ready, his round number:"+msg.currentRound);
                     }
                 }
             }
@@ -187,8 +186,8 @@ public class Player extends UntypedAbstractActor {
             if(newGestureMade == false){
                 pickGesture();
                 newGestureMade = true;
-                System.out.println(this.myGesture);
-                sendMsgToAll(new playerMsg(this.myState,this.myName,this.currentRound,this.myGesture,this.getSelf()));
+                System.out.println(this.myName + " "+this.myGesture);
+                //sendMsgToAll(new playerMsg(this.myState,this.myName,this.currentRound,this.myGesture,this.getSelf()));
             }
             //to ensure everyone start at same time. thread sleeps for 1 sec
             Thread.sleep(1);
@@ -196,18 +195,23 @@ public class Player extends UntypedAbstractActor {
 
 
 
-System.out.println(myState +" "+msg.state);
+//System.out.println(myState +" "+msg.state);
         if(myState.equals("playingWithOthers") && (msg.state.equals("playingWithOthers")) ){
+
+
             if(!(gestureMap.containsKey(msg.replyTo))){
                 gestureMap.put(msg.replyTo,msg.gesture);
 //                log.info(" Gesture is "+msg.gesture);
+            }else{
+                gestureMap.replace(msg.replyTo,msg.gesture);
+
             }
 
 
-
             if(this.gestureMap.size() == allPlayersRefList.length){
+
                 this.myState = "computingScore";
-                log.info("Player "+this.myName+": Map full");
+               // log.info("Player "+this.myName+": Map full");
                 int winningCount = 0;
                 for(int i =0;i<allPlayersRefList.length;i++){
                     if(allPlayersRefList[i] != getSelf()){
@@ -216,13 +220,15 @@ System.out.println(myState +" "+msg.state);
 //                        log.info(  gestureMap.get(allPlayersRefList[i])+" "+this.gestureMap.size()+" "+gestureMap.size() );
 //                        log.info(  gestureMap.get(allPlayersRefList[i])+" "+this.gestureMap.size()+" "+gestureMap.size() );
                         if(gestureMap.get(allPlayersRefList[i]).equals(this.myGesture)){//tie
-
-                        }else if( (gestureMap.get(allPlayersRefList[i]).equals("rock") ) && this.myGesture.equals("scissors")||
-                                (gestureMap.get(allPlayersRefList[i]).equals("scissors") ) && this.myGesture.equals("paper")||
-                                (gestureMap.get(allPlayersRefList[i]).equals("paper") ) && this.myGesture.equals("rock")
+                            log.info(this.myName + " tie,opponent:"+msg.gesture+" my:"+this.myGesture);
+                        }else if( (gestureMap.get(allPlayersRefList[i]).equals("rock")  && this.myGesture.equals("scissors"))||
+                                (gestureMap.get(allPlayersRefList[i]).equals("scissors")  && this.myGesture.equals("paper"))||
+                                (gestureMap.get(allPlayersRefList[i]).equals("paper")  && this.myGesture.equals("rock"))
                         ){//lose
+                            log.info(this.myName + " lose,opponent:"+msg.gesture+" my:"+this.myGesture);
                             winningCount--;
                         }else{//win
+                            log.info(this.myName + " win,opponent:"+msg.gesture+" my:"+this.myGesture);
                             winningCount++;
                         }
                     }
@@ -231,6 +237,7 @@ System.out.println(myState +" "+msg.state);
                     this.score += winningCount;
                 }
             }
+
 
         }
 
@@ -241,8 +248,9 @@ System.out.println(myState +" "+msg.state);
                 this.currentRound++;
                 this.myState = "ready";
                 newGestureMade = false;
+                this.gestureMap.clear();
                 roundMap.replace(getSelf(),this.currentRound);
-                sendMsgToAll(new playerMsg(this.myState,this.myName,this.currentRound,this.myGesture,getSelf()));
+                //sendMsgToAll(new playerMsg(this.myState,this.myName,this.currentRound,this.myGesture,getSelf()));
 
 
 
